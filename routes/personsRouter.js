@@ -1,20 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const sequelize = require('../database/db-connection');
+const { sequelize, Person } = require('../database/models');
 
 router.get('/get/all', async function(req, res, next) {
-  const [results, metadata] = await sequelize.query("SELECT * FROM persons;");
+  // const [results, metadata] = await sequelize.query("SELECT * FROM People;");
 
-  console.log(results);
-  console.log(metadata);
-
-  res.send('OK');
+  const persons = await Person.findAll();
+  console.log(persons)
+  res.status(201).send('OK');
 });
 
 
 /* GET home page. */
-router.get('/create', function(req, res, next) {
-  res.send('/create/person');
+router.post('/create', async function(req, res, next) {
+  try {
+    await Person.create({
+      person_name: req.body.person_name,
+      person_datebirth: req.body.person_datebirth,
+      person_age: Math.abs(new Date(new Date() - new Date(req.body.person_datebirth)).getUTCFullYear() - 1970),
+      person_social_rate: req.body.person_social_rate,
+    });
+    res.status(201).send('/person/create || person created!');
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err);
+  }
 });
 
 router.get('/update', function(req, res, next) {
